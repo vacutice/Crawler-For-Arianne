@@ -1,0 +1,712 @@
+日志见第6段。下面3段是我的YY，真相写在最后，484段开始，但是关于302重定向的问题是有理有据的。
+总的来说，linux curl命令不能完成这个任务，而java只要请求头设置正确就能打开Arianne，原因在于curl命令不能做到 setContentType("text/json")，一开始给它字符串，它就一直是StringEntity，哪怕设置了"Content-Type","application/json;charset=UTF-8"也是没有用的，还有就是laravel_session验证，httpclient不知道用了什么膜法把cookie给设好了所以只需要连续请求两次，第二次请求时laravel_session验证就能通过，但是你说难道curl不能连续来两次嘛？它不能嘛？沙雕吧，怎么会不能呢？然而再次请求仍然是422 ，仍然是
+{"message":"The given data was invalid.","errors":{"password":["validation.required"]}}
+所以不行吧，可能也有办法的，但是我不想查了，我就当是curl的天然缺陷吧。还有，返回302重定向html的错误原因是没有设置 "X-Requested-With: XMLHttpRequest" 设置了才是ajax异步请求，它就会返回给你json了。
+
+curl请求日志
+
+vacutice@DESKTOP-2OHU5N2:~$ curl -H "Content-Type:application/json;charset=UTF-8" -H "Accept: */*" -H "Accept-Language: zh-Hans-CN, zh-Hans; q=0.8, de-DE; q=0.7, de; q=0.5, en-GB; q=0.3, en; q=0.2" -H "Origin: https://www.docdroid.net" -H "Referer: https://www.docdroid.net/cUX0hjn/password" -H "Sec-Fetch-Mode: cors" -H "X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3" -H "Host: www.docdroid.net" -H "X-Requested-With: XMLHttpRequest" --cookie "laravel_session=eyJpdiI6IjdSNlNQTGo0dVBabUx1VEd3NUVFd2c9PSIsInZhbHVlIjoiYVRaMXI5eXJmdkhITXRvdEE4YllxVk5IRW4zWElqbXRoSHhPUGtJeTR3bjRwZWhsd1pjYk1LbHVCUlhPWG1KeSIsIm1hYyI6ImIxMmQ3MjRiZjBjZDk5NzgyOGYwYTU4MDFmMWVhOGZjMjA1NDg4ZDY0MTk2OWZjNTJiNjA3MjM5YWYyYTA4YWYifQ%3D%3D" --data '{"password": "Sunspear", errors: {errors: {}}, busy: true, successful: false}' -v https://www.docdroid.net/cUX0hjn/password
+*   Trying 54.37.79.95...
+* TCP_NODELAY set
+* Connected to www.docdroid.net (54.37.79.95) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=www.docdroid.net
+*  start date: Sep 13 17:07:44 2019 GMT
+*  expire date: Dec 12 17:07:44 2019 GMT
+*  subjectAltName: host "www.docdroid.net" matched cert's "www.docdroid.net"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fffdf4c98e0)
+> POST /cUX0hjn/password HTTP/2
+> Host: www.docdroid.net
+> User-Agent: curl/7.58.0
+> Cookie: laravel_session=eyJpdiI6IjdSNlNQTGo0dVBabUx1VEd3NUVFd2c9PSIsInZhbHVlIjoiYVRaMXI5eXJmdkhITXRvdEE4YllxVk5IRW4zWElqbXRoSHhPUGtJeTR3bjRwZWhsd1pjYk1LbHVCUlhPWG1KeSIsIm1hYyI6ImIxMmQ3MjRiZjBjZDk5NzgyOGYwYTU4MDFmMWVhOGZjMjA1NDg4ZDY0MTk2OWZjNTJiNjA3MjM5YWYyYTA4YWYifQ%3D%3D
+> Content-Type:application/json;charset=UTF-8
+> Accept: */*
+> Accept-Language: zh-Hans-CN, zh-Hans; q=0.8, de-DE; q=0.7, de; q=0.5, en-GB; q=0.3, en; q=0.2
+> Origin: https://www.docdroid.net
+> Referer: https://www.docdroid.net/cUX0hjn/password
+> Sec-Fetch-Mode: cors
+> X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3
+> X-Requested-With: XMLHttpRequest
+> Content-Length: 77
+>
+* Connection state changed (MAX_CONCURRENT_STREAMS updated)!
+* We are completely uploaded and fine
+< HTTP/2 422
+< server: nginx
+< content-type: application/json
+< cache-control: no-cache, private
+< date: Sun, 15 Sep 2019 20:19:53 GMT
+< set-cookie: laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D; expires=Sun, 15-Sep-2019 22:19:53 GMT; Max-Age=7200; path=/; httponly
+<
+* Connection #0 to host www.docdroid.net left intact
+{"message":"The given data was invalid.","errors":{"password":["Passwort muss ausgef\u00fcllt sein."]}}
+
+vacutice@DESKTOP-zh-Hans-CN, zh-Hans; q=0.8, de-DE; q=0.7, de; q=0.5, en-GB; q=0.3, en; q=0.2" -H "Origin: https://www.docdroid.net" -H "Referer: https://www.docdroid.net/cUX0hjn/password" -H "Sec-Fetch-Mode: cors" -H "Host: www.docdroid.net" --cookie " laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D" -v https://www.docdroid.net/cUX0hjn/arianne.docx
+*   Trying 54.37.79.95...
+* TCP_NODELAY set
+* Connected to www.docdroid.net (54.37.79.95) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=www.docdroid.net
+*  start date: Sep 13 17:07:44 2019 GMT
+*  expire date: Dec 12 17:07:44 2019 GMT
+*  subjectAltName: host "www.docdroid.net" matched cert's "www.docdroid.net"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fffd92708e0)
+> GET /cUX0hjn/arianne.docx HTTP/2
+> Host: www.docdroid.net
+> User-Agent: curl/7.58.0
+> Cookie:  laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D
+> Content-Type:application/json;charset=UTF-8
+> Accept: */*
+> Accept-Language: zh-Hans-CN, zh-Hans; q=0.8, de-DE; q=0.7, de; q=0.5, en-GB; q=0.3, en; q=0.2
+> Origin: https://www.docdroid.net
+> Referer: https://www.docdroid.net/cUX0hjn/password
+> Sec-Fetch-Mode: cors
+>
+* Connection state changed (MAX_CONCURRENT_STREAMS updated)!
+< HTTP/2 302
+< server: nginx
+< content-type: text/html; charset=UTF-8
+< location: https://www.docdroid.net/cUX0hjn/password
+< cache-control: no-cache, private
+< date: Sun, 15 Sep 2019 20:23:28 GMT
+< set-cookie: laravel_session=eyJpdiI6IlRadXhDMmdyNjhPN1V4dm1pbFg4Mnc9PSIsInZhbHVlIjoiQjBGc1J0UmgyQklUeUFQcXlQYnFYRFd4cVM2eldja2pSYnBGOTFHOVlcL1p5UStIb2M5Wkl3eVVhUlpVR0dxN0ciLCJtYWMiOiI0MjNiOTNiNmNkZjgxZTIyNWVmZjdlMDRjNjYyYjE1NGQ0MDhhNzk0NjIwYmIwYTYwNmM3ODAyYWYwNGRlZDgwIn0%3D; expires=Sun, 15-Sep-2019 22:23:28 GMT; Max-Age=7200; path=/; httponly
+<
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="refresh" content="0;url=https://www.docdroid.net/cUX0hjn/password" />
+
+        <title>Redirecting to https://www.docdroid.net/cUX0hjn/password</title>
+    </head>
+    <body>
+        Redirecting to <a href="https://www.docdroid.net/cUX0hjn/password">https://www.docdroid.net/cUX0hjn/password</a>.
+    </body>
+* Connection #0 to host www.docdroid.net left intact
+</html>
+
+vacutice@DESKTOP-2OHU5N2:~$ curl -H "Content-Type:application/json;charset=UTF-8" -H "Accept: */*" -H "Accept-Lanzh-Hans-CN, zh-Hans; q=0.8, de-DE; q=0.7, de; q=0.5, en-GB; q=0.3, en; q=0.2" -H "Origin: https://www.docdroid.net" -H "Referer: https://www.docdroid.net/cUX0hjn/password" -H "Sec-Fetch-Mode: cors" -H "X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3" -H "Host: www.docdroid.net" -H "X-Requested-With: XMLHttpRequest" --cookie "laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D" --data '{"password": "Sunspear", errors: {errors: {}}, busy: true, successful: true}' -v https://www.docdroid.net/cUX0hjn/password
+*   Trying 54.37.79.95...
+* TCP_NODELAY set
+* Connected to www.docdroid.net (54.37.79.95) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=www.docdroid.net
+*  start date: Sep 13 17:07:44 2019 GMT
+*  expire date: Dec 12 17:07:44 2019 GMT
+*  subjectAltName: host "www.docdroid.net" matched cert's "www.docdroid.net"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fffe39ab8e0)
+> POST /cUX0hjn/password HTTP/2
+> Host: www.docdroid.net
+> User-Agent: curl/7.58.0
+> Cookie: laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D
+> Content-Type:application/json;charset=UTF-8
+> Accept: */*
+> Accept-Language: zh-Hans-CN, zh-Hans; q=0.8, de-DE; q=0.7, de; q=0.5, en-GB; q=0.3, en; q=0.2
+> Origin: https://www.docdroid.net
+> Referer: https://www.docdroid.net/cUX0hjn/password
+> Sec-Fetch-Mode: cors
+> X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3
+> X-Requested-With: XMLHttpRequest
+> Content-Length: 76
+>
+* Connection state changed (MAX_CONCURRENT_STREAMS updated)!
+* We are completely uploaded and fine
+< HTTP/2 422
+< server: nginx
+< content-type: application/json
+< cache-control: no-cache, private
+< date: Sun, 15 Sep 2019 20:26:06 GMT
+< set-cookie: laravel_session=eyJpdiI6IlZ6REROV2phMjRiOXN3dFZEeGFES3c9PSIsInZhbHVlIjoiNjJmZzF0MDFHckl4Rmt4QTVzNnN6cFFUcFIrazYwXC9qVlZYMW1mMWNSZ1IxS0loSmx3OEh3VXVyeHRQanlqb1oiLCJtYWMiOiI4YmZkNmVjOWZjZTI3NTBiYTM3OGYyMjdkZWVjMGZhZmU5NzBiZDNkYmY5YzY2ZDQ1YzQ4MmY5ZDRhYWUzNzc1In0%3D; expires=Sun, 15-Sep-2019 22:26:06 GMT; Max-Age=7200; path=/; httponly
+<
+* Connection #0 to host www.docdroid.net left intact
+{"message":"The given data was invalid.","errors":{"password":["Passwort muss ausgef\u00fcllt sein."]}}
+
+vacutice@DESKTOP-zh-Hans-CN, zh-Hans; q=0.8, de-DE; q=0.7, de; q=0.5, en-GB; q=0.3, en; q=0.2" -H "Origin: https://www.docdroid.net" -H "Referer: https://www.docdroid.net/cUX0hjn/password" -H "Sec-Fetch-Mode: cors" -H "X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3" -H "Host: www.docdroid.net" -H "X-Requested-With: XMLHttpRequest" --cookie "laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D" --data '{"password":"Sunspear",errors:{errors:{}},busy:true,successful:true}' -v https://www.docdroid.net/cUX0hjn/password
+*   Trying 54.37.79.95...
+* TCP_NODELAY set
+* Connected to www.docdroid.net (54.37.79.95) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=www.docdroid.net
+*  start date: Sep 13 17:07:44 2019 GMT
+*  expire date: Dec 12 17:07:44 2019 GMT
+*  subjectAltName: host "www.docdroid.net" matched cert's "www.docdroid.net"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fffea8448e0)
+> POST /cUX0hjn/password HTTP/2
+> Host: www.docdroid.net
+> User-Agent: curl/7.58.0
+> Cookie: laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D
+> Content-Type:application/json;charset=UTF-8
+> Accept: */*
+> Accept-Language: zh-Hans-CN, zh-Hans; q=0.8, de-DE; q=0.7, de; q=0.5, en-GB; q=0.3, en; q=0.2
+> Origin: https://www.docdroid.net
+> Referer: https://www.docdroid.net/cUX0hjn/password
+> Sec-Fetch-Mode: cors
+> X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3
+> X-Requested-With: XMLHttpRequest
+> Content-Length: 68
+>
+* Connection state changed (MAX_CONCURRENT_STREAMS updated)!
+* We are completely uploaded and fine
+< HTTP/2 422
+< server: nginx
+< content-type: application/json
+< cache-control: no-cache, private
+< date: Sun, 15 Sep 2019 20:27:43 GMT
+< set-cookie: laravel_session=eyJpdiI6ImxneVY0NGQyanRjR3BkMVpXTFN0akE9PSIsInZhbHVlIjoiZkxXcUoxSFwvMWo2T2d4THdXbTlJZ0tKbEx3eDVEVkRSY3k3eUlqOWcrTW9EQWxpcTVCdkh3NGFKak92SXc3YloiLCJtYWMiOiI4YTFkOWE5YjdhMDlhNTM1YzFlNGZmZDk0ZTA1ZjViODQxYjg1YmEyZDBmYTlkZGQzMmJlMDQ5OGJiYjE4NzRiIn0%3D; expires=Sun, 15-Sep-2019 22:27:43 GMT; Max-Age=7200; path=/; httponly
+<
+* Connection #0 to host www.docdroid.net left intact
+{"message":"The given data was invalid.","errors":{"password":["Passwort muss ausgef\u00fcllt sein."]}}
+
+vacutice@DESKTOP-zh-Hans-CN, zh-Hans; q=0.8, de-DE; q=0.7, de; q=0.5, en-GB; q=0.3, en; q=0.2" -H "Origin: https://www.docdroid.net" -H "Referer: https://www.docdroid.net/cUX0hjn/password" -H "Sec-Fetch-Mode: cors" -H "X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3" -H "Host: www.docdroid.net" -H "X-Requested-With: XMLHttpRequest" --cookie "laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D" --data '{password:\"Sunspear\",errors:{errors:{}},busy:true,successful:true}' -v https://www.docdroid.net/cUX0hjn/password
+*   Trying 54.37.79.95...
+* TCP_NODELAY set
+* Connected to www.docdroid.net (54.37.79.95) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=www.docdroid.net
+*  start date: Sep 13 17:07:44 2019 GMT
+*  expire date: Dec 12 17:07:44 2019 GMT
+*  subjectAltName: host "www.docdroid.net" matched cert's "www.docdroid.net"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fffca7588e0)
+> POST /cUX0hjn/password HTTP/2
+> Host: www.docdroid.net
+> User-Agent: curl/7.58.0
+> Cookie: laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D
+> Content-Type:application/json;charset=UTF-8
+> Accept: */*
+> Accept-Language: zh-Hans-CN, zh-Hans; q=0.8, de-DE; q=0.7, de; q=0.5, en-GB; q=0.3, en; q=0.2
+> Origin: https://www.docdroid.net
+> Referer: https://www.docdroid.net/cUX0hjn/password
+> Sec-Fetch-Mode: cors
+> X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3
+> X-Requested-With: XMLHttpRequest
+> Content-Length: 68
+>
+* Connection state changed (MAX_CONCURRENT_STREAMS updated)!
+* We are completely uploaded and fine
+< HTTP/2 422
+< server: nginx
+< content-type: application/json
+< cache-control: no-cache, private
+< date: Sun, 15 Sep 2019 20:29:21 GMT
+< set-cookie: laravel_session=eyJpdiI6InJCRnJCZk1nSmtMS1JheWxPT2x6Rmc9PSIsInZhbHVlIjoiaXFUXC9ZRko4OFI1MHpaajR0dnErTG16Y21KM21PY09jTk95RGozSFJXRVwvVEFnTUg3eW9ITW15QklTaEFOZnZlIiwibWFjIjoiZWM5MzE5OGE4MTM2ZTk2MThjMDllNjM1NThkNjQzNzIzY2NjZjQwNTEzZmNlYjdlMTljODk0MDIyZjlhNTg2ZiJ9; expires=Sun, 15-Sep-2019 22:29:21 GMT; Max-Age=7200; path=/; httponly
+<
+* Connection #0 to host www.docdroid.net left intact
+{"message":"The given data was invalid.","errors":{"password":["Passwort muss ausgef\u00fcllt sein."]}}
+
+vacutice@DESKTOP-www.docdroid.net" -H "Referer: https://www.docdroid.net/cUX0hjn/password" -H "Sec-Fetch-Mode: cors" -H "X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3" -H "Host: www.docdroid.net" -H "X-Requested-With: XMLHttpRequest" --cookie "laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D" --data '{password:\"Sunspear\",errors:{errors:{}},busy:true,successful:true}' -v https://www.docdroid.net/cUX0hjn/password
+*   Trying 54.37.79.95...
+* TCP_NODELAY set
+* Connected to www.docdroid.net (54.37.79.95) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=www.docdroid.net
+*  start date: Sep 13 17:07:44 2019 GMT
+*  expire date: Dec 12 17:07:44 2019 GMT
+*  subjectAltName: host "www.docdroid.net" matched cert's "www.docdroid.net"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fffe53398e0)
+> POST /cUX0hjn/password HTTP/2
+> Host: www.docdroid.net
+> User-Agent: curl/7.58.0
+> Cookie: laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D
+> Content-Type:application/json;charset=UTF-8
+> Accept: */*
+> Origin: https://www.docdroid.net
+> Referer: https://www.docdroid.net/cUX0hjn/password
+> Sec-Fetch-Mode: cors
+> X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3
+> X-Requested-With: XMLHttpRequest
+> Content-Length: 68
+>
+* Connection state changed (MAX_CONCURRENT_STREAMS updated)!
+* We are completely uploaded and fine
+< HTTP/2 422
+< server: nginx
+< content-type: application/json
+< cache-control: no-cache, private
+< date: Sun, 15 Sep 2019 20:30:30 GMT
+< set-cookie: laravel_session=eyJpdiI6IjZZSUNtT29KTmQzUzRDOHdNVEVNUGc9PSIsInZhbHVlIjoiYUpUeFZiczFsb0xnU3Q5QjFGb2hLd1Rma3FVU1hGajYwZnJIeFY2ZVFRTTBzZGhMMEt4RzE3bGo3dmQrdHhzTSIsIm1hYyI6IjhmOWZjMGNlZTQwMWY4YWI0YzIyZmMzOTU0MzRjYjI2MGY5OTgxOTdiY2RiMmQ0ZWRkZDNlZGJhYmVkZDIyNWUifQ%3D%3D; expires=Sun, 15-Sep-2019 22:30:30 GMT; Max-Age=7200; path=/; httponly
+<
+* Connection #0 to host www.docdroid.net left intact
+{"message":"The given data was invalid.","errors":{"password":["Passwort muss ausgef\u00fcllt sein."]}}
+
+vacutice@DESKTOP-www.docdroid.net" -H "Referer: https://www.docdroid.net/cUX0hjn/password" -H "Sec-Fetch-Mode: cors" -H "X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3" -H "Host: www.docdroid.net"  --cookie "laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D" --data '{password:\"Sunspear\",errors:{errors:{}},busy:true,successful:true}' -v https://www.docdroid.net/cUX0hjn/password
+*   Trying 54.37.79.95...
+* TCP_NODELAY set
+* Connected to www.docdroid.net (54.37.79.95) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=www.docdroid.net
+*  start date: Sep 13 17:07:44 2019 GMT
+*  expire date: Dec 12 17:07:44 2019 GMT
+*  subjectAltName: host "www.docdroid.net" matched cert's "www.docdroid.net"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7ffff7e1b8e0)
+> POST /cUX0hjn/password HTTP/2
+> Host: www.docdroid.net
+> User-Agent: curl/7.58.0
+> Cookie: laravel_session=eyJpdiI6InVuaFNUY3JUdE5JXC9uaFQzOVhzeWVBPT0iLCJ2YWx1ZSI6ImpkTmdpYXNTdVc4cnp6OHB4TjYxUFFVTzdHc3JtRzlkcG5DNFRTRSthTmtmelhXako4TVFlWjltVDJEY0RpME8iLCJtYWMiOiI0MTM3MjEwYTNhNjY5MTc0Njc5NmUwM2U1NjE3OWQ3MDkwMmExNjI2ZGJlMDhjYTVkMzViYWM5ZjkzZWEyNzBhIn0%3D
+> Content-Type:application/json;charset=UTF-8
+> Accept: */*
+> Origin: https://www.docdroid.net
+> Referer: https://www.docdroid.net/cUX0hjn/password
+> Sec-Fetch-Mode: cors
+> X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3
+> Content-Length: 68
+>
+* Connection state changed (MAX_CONCURRENT_STREAMS updated)!
+* We are completely uploaded and fine
+< HTTP/2 302
+< server: nginx
+< content-type: text/html; charset=UTF-8
+< location: https://www.docdroid.net/cUX0hjn/password
+< cache-control: no-cache, private
+< date: Sun, 15 Sep 2019 20:30:59 GMT
+< set-cookie: laravel_session=eyJpdiI6IjJ5Yzl6allETk0yeHdaeUpmTXlrXC9nPT0iLCJ2YWx1ZSI6IjJcLzZNbGtuSlJ1V09oVEUxdFZROVJvdlA4MXUwK0hcL2lLZG9kM29saTV4MEQxSXBtVUN3MVdvRVRDSVZSQXhENyIsIm1hYyI6ImFkODQ4NTYwM2FkNWJiNTFlODQ5MDM2ZDZjMmQyYzZjNDE5ZjE0YmEwNjQ2NzAyNjA1MDlmNjIxMWYxMTA2NGIifQ%3D%3D; expires=Sun, 15-Sep-2019 22:30:59 GMT; Max-Age=7200; path=/; httponly
+<
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="refresh" content="0;url=https://www.docdroid.net/cUX0hjn/password" />
+
+        <title>Redirecting to https://www.docdroid.net/cUX0hjn/password</title>
+    </head>
+    <body>
+        Redirecting to <a href="https://www.docdroid.net/cUX0hjn/password">https://www.docdroid.net/cUX0hjn/password</a>.
+    </body>
+* Connection #0 to host www.docdroid.net left intact
+</html>
+
+vacutice@DESKTOP-2OHU5N2:~$ curl -H "Content-Type:application/json;charset=UTF-8" -H "Accept: */*"  -H "Origin: hwww.docdroid.net" -H "Referer: https://www.docdroid.net/cUX0hjn/password" -H "Sec-Fetch-Mode: cors" -H "X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3" -H "Host: www.docdroid.net" -H "X-Requested-With: XMLHttpRequest"  --data '{password:\"Sunspear\",errors:{errors:{}},busy:true,successful:true}' -v https://www.docdroid.net/cUX0hjn/password
+*   Trying 54.37.79.95...
+* TCP_NODELAY set
+* Connected to www.docdroid.net (54.37.79.95) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=www.docdroid.net
+*  start date: Sep 13 17:07:44 2019 GMT
+*  expire date: Dec 12 17:07:44 2019 GMT
+*  subjectAltName: host "www.docdroid.net" matched cert's "www.docdroid.net"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fffc94948e0)
+> POST /cUX0hjn/password HTTP/2
+> Host: www.docdroid.net
+> User-Agent: curl/7.58.0
+> Content-Type:application/json;charset=UTF-8
+> Accept: */*
+> Origin: https://www.docdroid.net
+> Referer: https://www.docdroid.net/cUX0hjn/password
+> Sec-Fetch-Mode: cors
+> X-CSRF-TOKEN:RziJJJ8z5eHnSrInBs4wKoZBUbQC3O4MY53CZdX3
+> X-Requested-With: XMLHttpRequest
+> Content-Length: 68
+>
+* Connection state changed (MAX_CONCURRENT_STREAMS updated)!
+* We are completely uploaded and fine
+< HTTP/2 419
+< server: nginx
+< content-type: application/json
+< cache-control: no-cache, private
+< date: Sun, 15 Sep 2019 20:32:45 GMT
+< set-cookie: laravel_session=eyJpdiI6IjQ5YkppdlF3Zlp6dUdRell3Tm03XC9BPT0iLCJ2YWx1ZSI6IkRLV21vRFNaa2w3bUJUWWpXWkJIKzMzWmp2R2Nla0UxM1JFVm9BMENtYitiMmJBcUdWaFRXUXE4YTQycDdqbU4iLCJtYWMiOiJhZDI0ZjNiN2NiNTQ1ZGYzNzUwZjFjMmExNTUxOGJkZTFmOWMyYTMwMzQxNDRiNTgzZDJmODM3OGUxMTEzYjIwIn0%3D; expires=Sun, 15-Sep-2019 22:32:45 GMT; Max-Age=7200; path=/; httponly
+<
+{
+    "message": "CSRF token mismatch."
+* Connection #0 to host www.docdroid.net left intact
+}
+
+vacutice@DESKTOP-2OHU5N2:~$
+
+
+今天又试了一把curl命令，我就在想，之前我把可能输错的地方都调了一遍，那么会不会真正的错误是在我认为最不可能出错的地方了呢？
+事实就是这么狗血的！和上面说的 setContentType根本没有任何关系！我把java代码里面那句删了照样跑得出来！啊，我死了。
+居然是错在那个字符串上。
+我失败的样子是这样的：
+'{password:"Sunspear",errors:{errors:{}},busy:true,successful:true}'
+或是这样的：
+'{password:\"Sunspear\",errors:{errors:{}},busy:true,successful:true}' 
+唯一正确的样子是这样的：
+"{\"password\":\"Sunspear\",\"errors\":\"{errors:{}}\",\"busy\":\"true\",\"successful\":\"false\"}"
+或许这里面有什么不可告人的秘密吧，但我原本以为对那边的机器来说这些都是一样的。。。
+
+好吧，我要把这次的日志叫做“操作模板”↓
+
+vacutice@DESKTOP-2OHU5N2:~$ curl -H "Accept: */*" -H "Origin: https://www.docdroid.net" -H "Referer: https://www.docdroid.net/cUX0hjn/password" -H "Host: www.docdroid.net" -H "X-Requested-With: XMLHttpRequest" -v https://www.docdroid.net/cUX0hjn/password
+*   Trying 54.37.79.95...
+* TCP_NODELAY set
+* Connected to www.docdroid.net (54.37.79.95) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=www.docdroid.net
+*  start date: Sep 13 17:07:44 2019 GMT
+*  expire date: Dec 12 17:07:44 2019 GMT
+*  subjectAltName: host "www.docdroid.net" matched cert's "www.docdroid.net"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fffdac4e8e0)
+> GET /cUX0hjn/password HTTP/2
+> Host: www.docdroid.net
+> User-Agent: curl/7.58.0
+> Accept: */*
+> Origin: https://www.docdroid.net
+> Referer: https://www.docdroid.net/cUX0hjn/password
+> X-Requested-With: XMLHttpRequest
+>
+* Connection state changed (MAX_CONCURRENT_STREAMS updated)!
+< HTTP/2 200
+< server: nginx
+< content-type: text/html; charset=UTF-8
+< vary: Accept-Encoding
+< cache-control: no-cache, private
+< date: Mon, 21 Oct 2019 14:48:22 GMT
+< set-cookie: laravel_session=eyJpdiI6Ikd6VGRhY3pDSnE1UkFDY29LVk95TEE9PSIsInZhbHVlIjoiYkdwdmhEbVd5RUprTzh0a2p0dXRwTEx4b3NGaGcrMll1M2VvMDVaeVV4TTRGeFI5Z1YrRExXTUJUc1FXN3l0YSIsIm1hYyI6ImFiZmRiMzIzN2YwYmUyNmE1OGVkYzU5NWRkZDI5NDAxZDVmOWI0NjMwNTcwYjRmN2E5YjY3YTEwZjFhZGUwNzQifQ%3D%3D; expires=Mon, 21-Oct-2019 16:48:22 GMT; Max-Age=7200; path=/; httponly
+<
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta Information -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <title>Arianne.docx - DocDroid</title>
+
+
+
+    <link rel="shortcut icon" href="/images/favicon.png">
+
+
+
+
+
+<!-- CSS -->
+    <link href="/css/app.css?id=350a421ae6c5298c278f" rel="stylesheet">
+
+    <meta property="fb:app_id" content="450042191753217" />
+    <meta name="twitter:site" content="@docdroid_" />
+    <meta name="wot-verification" content="d00a3eca2520f263d354"/>
+
+
+    <!-- Global Data -->
+    <script>
+        window.Spark = {"braintreeMerchantId":null,"braintreeToken":null,"cardUpFront":false,"collectsBillingAddress":true,"collectsEuropeanVat":true,"createsAdditionalTeams":true,"csrfToken":"X8Ef6TPsFk6kubTnUNVBDdtW13kOSjABRebE0gx4","currencySymbol":"$","env":"production","roles":[],"state":{"user":null,"teams":[],"currentTeam":null},"stripeKey":"pk_live_e4QZlwMhPFKGIwXdgGYZsZlU","teamString":"team","pluralTeamString":"teams","userId":null,"usesApi":true,"usesBraintree":false,"usesTeams":false,"usesStripe":true};
+
+        window.app = {
+            env: 'production',
+            routeName: 'requestDocumentPassword',
+            isLoggedIn: false,
+            isSubscribed: false,
+            apiUrl: '/api'
+        };
+    </script>
+
+</head>
+<body class="dark">
+
+
+
+<div id="app">
+
+
+
+<!-- Main Content -->
+
+
+    <nav class="navbar navbar-fixed-top  bg-transparent  navbar-flex hidden-print navbar-shadow">
+
+        <div class="navbar-header hidden-xs hidden-sm">
+
+                            <div class="navbar-branding">
+    <a class="navbar-brand" href="https://www.docdroid.net"> <img src="https://www.docdroid.net/images/logo_navbar_dark.png" alt="DocDroid">
+    </a>
+</div>                    </div>
+
+
+        <div class="nav navbar-nav navbar-left navbar-flex-1">
+
+            <h1 v-pre>
+
+                Arianne.docx
+            </h1>
+        </div>
+
+    </nav>
+
+
+
+
+
+    <div class="container">
+
+
+
+        <document-enter-password document-id="cUX0hjn"></document-enter-password>
+
+
+    </div>
+
+
+<!-- Application Level Modals -->
+    </div>
+
+
+<!-- JavaScript -->
+
+
+
+
+
+<script src="/js/app.js?id=99c499f75232ffa85ca9"></script>
+
+
+<!-- Fonts -->
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700' rel='stylesheet' type='text/css'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
+
+
+</body>
+</html>
+* Connection #0 to host www.docdroid.net left intact
+vacutice@DESKTOP-2OHU5N2:~$
+vacutice@DESKTOP-2OHU5N2:~$
+vacutice@DESKTOP-2OHU5N2:~$ curl -H "Content-Type:application/json;charset=UTF-8" -H "Accept: */*" -H "Origin: https://www.docdroid.net" -H "Referer: https://www.docdroid.net/cUX0hjn/password" -H "Sec-Fetch-Mode: cors" -H "X-CSRF-TOKEN:X8Ef6TPsFk6kubTnUNVBDdtW13kOSjABRebE0gx4" -H "Host: www.docdroid.net" -H "X-Requested-With: XMLHttpRequest" -b "laravel_session=eyJpdiI6Ikd6VGRhY3pDSnE1UkFDY29LVk95TEE9PSIsInZhbHVlIjoiYkdwdmhEbVd5RUprTzh0a2p0dXRwTEx4b3NGaGcrMll1M2VvMDVaeVV4TTRGeFI5Z1YrRExXTUJUc1FXN3l0YSIsIm1hYyI6ImFiZmRiMzIzN2YwYmUyNmE1OGVkYzU5NWRkZDI5NDAxZDVmOWI0NjMwNTcwYjRmN2E5YjY3YTEwZjFhZGUwNzQifQ%3D%3D; expires=Mon, 21-Oct-2019 16:48:22 GMT; Max-Age=7200; path=/; httponly" --data "{\"password\":\"Sunspear\",\"errors\":\"{errors:{}}\",\"busy\":\"true\",\"successful\":\"false\"}" -v https://www.docdroid.net/cUX0hjn/password
+*   Trying 54.37.79.95...
+* TCP_NODELAY set
+* Connected to www.docdroid.net (54.37.79.95) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/certs/ca-certificates.crt
+  CApath: /etc/ssl/certs
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Client hello (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=www.docdroid.net
+*  start date: Sep 13 17:07:44 2019 GMT
+*  expire date: Dec 12 17:07:44 2019 GMT
+*  subjectAltName: host "www.docdroid.net" matched cert's "www.docdroid.net"
+*  issuer: C=US; O=Let's Encrypt; CN=Let's Encrypt Authority X3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fffc49d08e0)
+> POST /cUX0hjn/password HTTP/2
+> Host: www.docdroid.net
+> User-Agent: curl/7.58.0
+> Cookie: laravel_session=eyJpdiI6Ikd6VGRhY3pDSnE1UkFDY29LVk95TEE9PSIsInZhbHVlIjoiYkdwdmhEbVd5RUprTzh0a2p0dXRwTEx4b3NGaGcrMll1M2VvMDVaeVV4TTRGeFI5Z1YrRExXTUJUc1FXN3l0YSIsIm1hYyI6ImFiZmRiMzIzN2YwYmUyNmE1OGVkYzU5NWRkZDI5NDAxZDVmOWI0NjMwNTcwYjRmN2E5YjY3YTEwZjFhZGUwNzQifQ%3D%3D; expires=Mon, 21-Oct-2019 16:48:22 GMT; Max-Age=7200; path=/; httponly
+> Content-Type:application/json;charset=UTF-8
+> Accept: */*
+> Origin: https://www.docdroid.net
+> Referer: https://www.docdroid.net/cUX0hjn/password
+> Sec-Fetch-Mode: cors
+> X-CSRF-TOKEN:X8Ef6TPsFk6kubTnUNVBDdtW13kOSjABRebE0gx4
+> X-Requested-With: XMLHttpRequest
+> Content-Length: 81
+>
+* Connection state changed (MAX_CONCURRENT_STREAMS updated)!
+* We are completely uploaded and fine
+< HTTP/2 200
+< server: nginx
+< content-type: application/json
+< vary: Accept-Encoding
+< cache-control: no-cache, private
+< date: Mon, 21 Oct 2019 14:49:30 GMT
+< set-cookie: laravel_session=eyJpdiI6InVhbzZlQlg4eEpOVW5TMGpYeHJKaHc9PSIsInZhbHVlIjoiaFRpUDlwdTB2ZVR0ak4yZXdJaFhEWjlyRjNrRDc3UlFyaDNUaGI1UExRcmt3NXVTZzlBb1pNYlJLWXJZZTFDNSIsIm1hYyI6IjVlNGQyZjA5NmE1N2UxMjE5Y2RiMzQxZWRmOWY2MzA3MmNiN2EwMWE1ZjA1ODdmZTY0ZTI5MzYxYjUzZjIxMWYifQ%3D%3D; expires=Mon, 21-Oct-2019 16:49:30 GMT; Max-Age=7200; path=/; httponly
+<
+* Connection #0 to host www.docdroid.net left intact
+{"redirect":"https:\/\/www.docdroid.net\/cUX0hjn\/arianne.docx"}
+
+写在最后：
+我TM就是个傻逼，或许是我对电脑的期望过高了
